@@ -1,0 +1,301 @@
+%\VignetteIndexEntry{practical1}
+%!Snw weave = knitr
+%\VignetteEngine{knitr::knitr}
+<<echo=FALSE>>=
+results = "hide"; echo = FALSE
+@
+\documentclass[a4paper,justified,openany]{tufte-handout}
+
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+opts_knit$set(out.format = "latex")
+knit_theme$set(knit_theme$get("greyscale0"))
+
+options(replace.assign=FALSE,width=50)
+
+opts_chunk$set(fig.path='figure/graphics-',
+               cache.path='cache/graphics-',
+               fig.align='center',
+               dev='pdf', fig.width=5, fig.height=5,
+               fig.show='hold', cache=FALSE, par=TRUE)
+knit_hooks$set(crop=hook_pdfcrop)
+
+knit_hooks$set(par=function(before, options, envir){
+  if (before && options$fig.show!='none') {
+    par(mar=c(3,3,2,1),cex.lab=.95,cex.axis=.9,
+        mgp=c(2,.7,0),tcl=-.01, las=1)
+  }}, crop=hook_pdfcrop)
+@
+\usepackage{amsmath}
+
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
+
+\title{Efficient R: practical \Sexpr{ifelse(echo, "solutions", "")}}
+\author[Dr Colin Gillespie]{Dr Colin Gillespie}
+\date{}  % if the \date{} command is left out, the current date will be used
+\usepackage{booktabs}
+\usepackage{units}
+\usepackage{fancyvrb}
+\usepackage{microtype}
+
+\fvset{fontsize=\normalsize}
+\newcommand{\cc}{\texttt}
+\setcounter{secnumdepth}{2}
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+\bigskip
+
+\subsection*{Course R package}
+
+Before starting, we first install \cc{drat}\sidenote{If you have already installed \cc{drat} you can skip this step.}
+
+<<eval=FALSE, tidy=FALSE>>=
+install.packages("drat")
+@
+
+\noindent Then install the course R package via
+
+<<eval=FALSE, tidy=FALSE>>=
+drat::addRepo("rcourses")
+install.packages("jrEfficient", type="source")
+@
+
+\noindent This R package contains copies of the practicals, solutions and data sets that we require. To load the package, use
+
+<<>>=
+library("jrEfficient")
+@
+
+\noindent Each practical corresponds to a chapter in the notes.
+
+\section*{Practical 1}
+
+\begin{enumerate}
+\item Reproduce the timing results in chapter 2 using the \texttt{benchmark}
+  function from the \texttt{rbenchmark} package. Remember to load the package using
+<<echo=TRUE>>=
+library("rbenchmark")
+@
+\item \textbf{Case study} In this example, we are going to investigate loading a
+  large data frame. First, we'll generate a large matrix of random numbers and
+  save it as a csv file:\sidenote{If setting \cc{N=1e6} is too large for your
+    machine, reduce it at bit. For example, \cc{N=50,000}.}
+<<practical1, cache=TRUE>>=
+N = 1e5
+m = as.data.frame(matrix(runif(N), ncol=1000))
+write.csv(m, file="example.csv", row.names=FALSE)
+@
+\noindent We can read the file the back in again using \texttt{read.csv}
+<<cache=TRUE>>=
+dd = read.csv("example.csv")
+@
+\noindent To get a baseline result, time the \cc{read.csv} function call above.
+<<cache=TRUE, echo=echo, results=results, eval=echo>>=
+system.time(read.csv("example.csv"))
+@
+
+\noindent We will now look ways of speeding up this step.
+\begin{enumerate}
+\item Explicitly define the classes of each column using \texttt{colClasses} in
+  \texttt{read.csv}, for example, if we have 1000 columns that all have data
+  type numeric, then:
+<<cache=TRUE,results='hide', tidy=FALSE>>=
+read.csv(file="example.csv",
+         colClasses=rep("numeric", 1000))
+@
+\item Use the \cc{saveRDS} and \cc{readRDS} functions:
+<<cache=TRUE, results="hide">>=
+saveRDS(m, file="example.RData")
+readRDS(file="example.RData")
+@
+\item Install the \cc{readr} package via
+<<eval=FALSE>>=
+install.packages("readr")
+@
+\noindent Then load the package in the usual way
+<<>>=
+library("readr")
+@
+\noindent This package contains the function \cc{read\_csv}; a replacement function for \cc{read.cvs}.
+Is this new function much better than the default?
+\end{enumerate}
+Which of the above give the biggest speed-ups? Are there any downsides to using these techniques? Do your results depend on the number of columns or the number of rows?
+<<echo=echo, results=results, eval=FALSE, tidy=TRUE>>=
+## 1. Using RData files is the fastest -
+## although you have to read the data in first.
+## Set colClasses also produces an good speed-up.
+
+##2. Setting colClasses R is no longer checking your data types.
+## If your data is changing - for example it's coming from the web
+## or a database, this may be problem.
+
+##3. The results do depend on the number of columns, as this code demonstrates
+N = c(1, 10, 100, 1000, 1000, 10000)
+l = numeric(5)
+for(i in seq_along(N)){
+  m = as.data.frame(matrix(runif(N[6]), ncol=N[i]))
+  write.csv(m, file="example.csv", row.names=FALSE)
+  cc = rep("numeric", N[i])
+  l[i] = system.time(
+    read.csv("example.csv", colClasses=cc))[3]
+}
+l
+
+## Notice that when we have a large number of columns,
+## we get a slow down in reading in data set (even though
+## we have specified the column classes). The reason for
+## this slow down is that we are creating a data frame
+## and each column has to be initialised with a particular class.
+@
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Practical 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section*{Practical 2}
+
+\begin{enumerate}
+\item In this question, we'll compare matrices and data frames. Suppose we have a matrix, \texttt{d\_m}
+<<>>=
+##For fast computers
+#d_m = matrix(1:1000000, ncol=1000)
+##Slower computers
+d_m = matrix(1:10000, ncol=100)
+dim(d_m)
+@
+and a data frame \texttt{d\_df}:
+<<>>=
+d_df = as.data.frame(d_m)
+colnames(d_df) = paste0("c", 1:ncol(d_df))
+@
+\begin{enumerate}
+\item Using the following code, calculate the relative differences between selecting the first column/row of a data frame and matrix.
+<<results='hide', tidy=FALSE>>=
+benchmark(replications=1000,
+          d_m[1,], d_df[1,], d_m[,1], d_df[,1],
+          columns=c("test", "elapsed", "relative"))
+@
+\noindent Can you explain the result? Try varying the number of replications.
+
+<<echo=echo, results=results, tidy=TRUE>>=
+## Two things are going on here
+## 1. The very large difference when selecting columns and rows (in data frames)
+## is because the data is stored in column major-order. Although the matrix is also stored in column major-order, because everything is the same type, we can efficiently select values.
+
+##2. Matrices are also more memory efficient:
+m = matrix(runif(1e4), ncol=1e4)
+d = data.frame(m)
+object.size(m)
+object.size(d)
+@
+
+\item When selecting columns in a data frame, there are a few different methods. For example,
+<<results='hide'>>=
+d_df$c10
+d_df[,10]
+d_df[,"c10"]
+d_df[,colnames(d_df) == "c10"]
+@
+Compare these four methods.
+
+\end{enumerate}
+
+<<echo=FALSE, eval=FALSE>>=
+benchmark(replications=10000,
+          d_df$c10, d_df[,10], d_df[,"c10"],d_df[,colnames(d_df) == "c10"],
+          columns=c("test", "elapsed", "relative"))
+
+m = matrix(1:100000000, ncol=10000)
+dim(m)
+
+benchmark(replications=10000,
+          m[,1], m[1,], columns=c("test", "elapsed", "relative"))
+@
+
+<<echo=FALSE>>=
+n = 1
+@
+\item Consider the following piece of code:
+<<tidy=FALSE>>=
+a = NULL
+for(i in 1:n)
+  a = c(a, 2 * pi * sin(i))
+@
+\noindent This code calculates the values:
+\[
+2\pi \sin(1), 2 \pi \sin(2), 2 \pi sin(3), \ldots, 2 \pi sin(n)
+\]
+and stores them in a vector. Two obvious ways of speeding up this code are:
+\begin{itemize}
+\item Pre-allocate the vector \texttt{a} for storing your results.
+\item Remove $2 \times \pi$ from the loop, i.e. at the end of the loop have the statement: \texttt{2*pi*a}.
+\end{itemize}
+Try the above techniques for speeding up the loop. Vary $n$ and plot your results.
+\item R is an interpreted language; this means that the interpreter executes the program source code directly, statement by statement. Therefore, every function call takes time.\sidenote{This example is for illustrative proposes. Please don't start worrying about comments and brackets.} Consider these three examples:
+<<cache=TRUE, tidy=FALSE>>=
+n = 1e6
+## Example 1
+I = 0
+for(i in 1:n) {
+  10
+  I = I + 1
+}
+## Example 2
+I = 0
+for(i in 1:n){
+  ((((((((((10))))))))))
+  I = I + 1
+}
+## Example 3
+I = 0
+for(i in 1:n){
+  ##This is a comment
+  ##But it is still parsed
+  ##So takes time
+  ##But not a lot
+  ##So don't worry!
+  10
+  I = I + 1
+}
+@
+\noindent Using the \texttt{benchmark} function, time these three examples.
+\end{enumerate}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Practical 3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section*{Practical 3: parallel programming}
+
+
+\begin{enumerate}
+\item  To begin, load the \texttt{parallel} package and determine how many cores you have
+<<results='hide'>>=
+library("parallel")
+detectCores()
+@
+\item Run the parallel \texttt{apply} example in the notes.
+\begin{itemize}
+\item On your machine, what value of \texttt{N} do you need to use to make the parallel code run quicker than the standard serial version?
+\item When I ran the benchmarks, I didn't include the \texttt{makeCluster} and \texttt{stopCluster} functions calls. Include these calls in your timings. How does this affect your benchmarks?
+\end{itemize}
+\item Run the dice game Monte-Carlo example in the notes. Vary the parameter \texttt{M}.\sidenote{Try setting \texttt{M=50} and varying \texttt{N}.}
+\end{enumerate}
+
+
+\section*{Solutions}
+
+Solutions are contained within this package:
+<<eval=FALSE>>=
+library("jrEfficient")
+vignette("solutions1", package="jrEfficient")
+@
+
+
+\end{document}

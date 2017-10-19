@@ -1,0 +1,25 @@
+Package: jrEfficient
+Type: Package
+Title: Efficient R Programming
+Version: 0.1.1
+Authors@R: person("Colin", "Gillespie", 
+     email="colin@jumpingrivers.com", 
+     role = c("aut", "cre"))
+Description: This is a one day intensive course on efficient R programming. This
+    course will be a mixture of lectures and computer practicals. This course is
+    aimed at anyone who uses R, but wants tips and techniques on speeding up their
+    code. Prior knowledge: it will be assumed that participants are familiar with R.
+    For example, inputting data, basic visualisation and data frames. Attending the
+    introduction to R will be sufficient. This course is suitable to a wide range of
+    applicants e.g. biologists, statisticians, engineers, students.
+URL: https://www.jumpingrivers.com
+License: GPL-3
+Depends:
+    R (>= 3.2.0)
+Imports:
+    rbenchmark
+Suggests:
+    knitr,
+    readr
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1

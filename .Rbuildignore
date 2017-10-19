@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^Makefile$
+^deploy.sh$
+^.gitignore$
+^.travis.yml$
+^LICENSE$
+pdfs
+README.md

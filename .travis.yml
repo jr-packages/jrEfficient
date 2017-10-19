@@ -1,0 +1,24 @@
+language: r
+cache: packages 
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
+r_packages:
+  - drat
+
+before_install:
+  - tlmgr install fancyvrb units
+
+before_script:
+  - make
+
+after_success:
+  - wget https://raw.githubusercontent.com/rcourses/drat/master/deploy.sh
+  - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy.sh
+
+env:
+  global:
+  - secure: Cfr4gIhJb3idcUf8PMwBSb8L0cw6YN6v5ofufoH2rGohCNqErdReWOKHQ/XJ73HSMix/EkQxgYa/uzJoNYLnE1kcXi6JJOEWeXYHXeYPupZ53DxVSpKoyi1U4JQ9U0e/D/uLzeq0qnMWr/jXrXL7p8ZocX/LCC6AB8QbNSHv3zU=
