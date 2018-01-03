@@ -17,7 +17,9 @@ License: GPL-3
 Depends:
     R (>= 3.2.0)
 Imports:
-    rbenchmark
+    rbenchmark, jrData
+Remotes:
+    jr-packages/jrData
 Suggests:
     knitr,
     readr
