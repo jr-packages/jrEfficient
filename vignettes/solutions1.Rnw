@@ -47,29 +47,6 @@ knit_hooks$set(par=function(before, options, envir){
 \maketitle% this prints the handout title, author, and date
 \bigskip
 
-\subsection*{Course R package}
-
-Before starting, we first install \cc{drat}\sidenote{If you have already installed \cc{drat} you can skip this step.}
-
-<<eval=FALSE, tidy=FALSE>>=
-install.packages("drat")
-@
-
-\noindent Then install the course R package via
-
-<<eval=FALSE, tidy=FALSE>>=
-drat::addRepo("rcourses")
-install.packages("jrEfficient", type="source")
-@
-
-\noindent This R package contains copies of the practicals, solutions and data sets that we require. To load the package, use
-
-<<>>=
-library("jrEfficient")
-@
-
-\noindent Each practical corresponds to a chapter in the notes.
-
 \section*{Practical 1}
 
 \begin{enumerate}
