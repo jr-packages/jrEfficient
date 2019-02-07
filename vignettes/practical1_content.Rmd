@@ -9,9 +9,6 @@ library("rbenchmark")
   large data frame. First, we'll generate a large matrix of random numbers and
   save it as a csv file:^[If setting `N=1e6` is too large for your
     machine, reduce it at bit. For example, `N=50,000`.]
-```{r, echo = FALSE}
-setwd("../inst")
-```
 ```{r,practical1, cache=TRUE, echo = TRUE}
 N = 1e5
 m = as.data.frame(matrix(runif(N), ncol=1000))

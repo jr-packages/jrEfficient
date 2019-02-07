@@ -23,7 +23,8 @@ Remotes:
 Suggests:
     knitr,
     readr,
-    tufte
+    tufte,
+    formatR
 Encoding: UTF-8
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
