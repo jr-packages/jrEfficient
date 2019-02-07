@@ -1,9 +1,9 @@
 ## ----echo=FALSE----------------------------
 library(tufte)
-knitr::opts_chunk$set(results = "show", echo = TRUE)
+knitr::opts_chunk$set(results = "hide", echo = FALSE)
 
 ## ----echo=TRUE-----------------------------
-library("rbenchmark")
+library("bench")
 
 ## ----practical1, cache=TRUE, echo = TRUE----
 N = 1e5
@@ -69,9 +69,9 @@ d_df = as.data.frame(d_m)
 colnames(d_df) = paste0("c", 1:ncol(d_df))
 
 ## ----results='hide', tidy=FALSE, echo = TRUE----
-benchmark(replications=1000,
-          d_m[1,], d_df[1,], d_m[,1], d_df[,1],
-          columns=c("test", "elapsed", "relative"))
+mark(d_m[1,], d_df[1,], d_m[,1], d_df[,1],
+     relative = TRUE, 
+     check = FALSE)
 
 ## ----  tidy=TRUE---------------------------
 ## Two things are going on here
@@ -90,16 +90,20 @@ d_df[,10]
 d_df[,"c10"]
 d_df[,colnames(d_df) == "c10"]
 
-## ----echo=FALSE, eval=FALSE----------------
-#  benchmark(replications=10000,
-#            d_df$c10, d_df[,10], d_df[,"c10"],d_df[,colnames(d_df) == "c10"],
-#            columns=c("test", "elapsed", "relative"))
+## ---- eval=FALSE---------------------------
+#  mark(d_df$c10,
+#       d_df[,10],
+#       d_df[,"c10"],
+#       d_df[,colnames(d_df) == "c10"],
+#       iterations = 10000,
+#       relative = TRUE)
 #  
 #  m = matrix(1:100000000, ncol=10000)
 #  dim(m)
 #  
-#  benchmark(replications=10000,
-#            m[,1], m[1,], columns=c("test", "elapsed", "relative"))
+#  mark(m[,1], m[1,],
+#       iterations = 10000,
+#       relative = TRUE)
 
 ## ----echo=FALSE----------------------------
 n = 1

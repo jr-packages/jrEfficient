@@ -16,7 +16,7 @@ vignette: >
 
 ```{r echo=FALSE}
 library(tufte)
-knitr::opts_chunk$set(results = "hide", echo = FALSE)
+knitr::opts_chunk$set(results = "SHOW", echo = TRUE)
 ```
 
 ```{r child = 'practical1_content.Rmd'}

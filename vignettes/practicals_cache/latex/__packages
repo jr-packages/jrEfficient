@@ -1,5 +1,4 @@
 base
-tufte
-rbenchmark
-readr
 jrEfficient
+tufte
+bench

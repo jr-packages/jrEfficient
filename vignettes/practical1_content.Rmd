@@ -1,52 +1,51 @@
 ## Practical 1
 
-1. Reproduce the timing results in chapter 2 using the `benchmark`
-  function from the `rbenchmark` package. Remember to load the package using
-```{r,echo=TRUE}
-library("rbenchmark")
-```
+1. Reproduce the timing results in chapter 2 using the `mark()`
+  function from the `bench` package. Remember to load the package using
+    ```{r,echo=TRUE}
+    library("bench")
+    ```
 2. **Case study** In this example, we are going to investigate loading a
   large data frame. First, we'll generate a large matrix of random numbers and
   save it as a csv file:^[If setting `N=1e6` is too large for your
     machine, reduce it at bit. For example, `N=50,000`.]
-```{r,practical1, cache=TRUE, echo = TRUE}
-N = 1e5
-m = as.data.frame(matrix(runif(N), ncol=1000))
-write.csv(m, file="example.csv", row.names=FALSE)
-```
-\noindent We can read the file the back in again using `read.csv`
-```{r,cache=TRUE, echo = TRUE}
-dd = read.csv("example.csv")
-```
-\noindent To get a baseline result, time the `read.csv` function call above.
-```{r,cache=TRUE, echo = TRUE}
-system.time(read.csv("example.csv"))
-```
+    ```{r,practical1, cache=TRUE, echo = TRUE}
+    N = 1e5
+    m = as.data.frame(matrix(runif(N), ncol=1000))
+    write.csv(m, file="example.csv", row.names=FALSE)
+    ```
+We can read the file the back in again using `read.csv`
+    ```{r,cache=TRUE, echo = TRUE}
+    dd = read.csv("example.csv")
+    ```
+To get a baseline result, time the `read.csv` function call above.
+    ```{r,cache=TRUE, echo = TRUE}
+    system.time(read.csv("example.csv"))
+    ```
 \noindent We will now look ways of speeding up this step.
-  + Explicitly define the classes of each column using `colClasses` in
+    + Explicitly define the classes of each column using `colClasses` in
     `read.csv`, for example, if we have 1000 columns that all have data
     type numeric, then:
-    ```{r,cache=TRUE,results='hide', tidy=FALSE, echo = TRUE}
-    read.csv(file="example.csv",
-             colClasses=rep("numeric", 1000))
-    ```
-  + Use the `saveRDS` and `readRDS` functions:
-    ```{r,cache=TRUE, results="hide", echo = TRUE}
-    saveRDS(m, file="example.RData")
-    readRDS(file="example.RData")
-    ```
-  + Install the `readr` package via
-    ```{r,eval=FALSE, echo = TRUE}
-    install.packages("readr")
-    ```
-  \noindent Then load the package in the usual way
-    ```{r, echo = TRUE, eval= FALSE}
-    library("readr")
-    ```
-  \noindent This package contains the function `read\_csv`; a replacement function for `read.cvs`.
-  Is this new function much better than the default?
+        ```{r,cache=TRUE,results='hide', tidy=FALSE, echo = TRUE}
+        read.csv(file="example.csv",
+                 colClasses=rep("numeric", 1000))
+        ```
+    + Use the `saveRDS` and `readRDS` functions:
+        ```{r,cache=TRUE, results="hide", echo = TRUE}
+        saveRDS(m, file="example.RData")
+        readRDS(file="example.RData")
+        ```
+    + Install the `readr` package via
+        ```{r,eval=FALSE, echo = TRUE}
+        install.packages("readr")
+        ```
+        Then load the package in the usual way
+        ```{r, echo = TRUE, eval= FALSE}
+        library("readr")
+        ```
+        This package contains the function `read_csv`; a replacement function for `read.cvs`. Is this new function much better than the default?
 
-Which of the above give the biggest speed-ups? Are there any downsides to using these techniques? Do your results depend on the number of columns or the number of rows?
+  Which of the above give the biggest speed-ups? Are there any downsides to using these   techniques? Do your results depend on the number of columns or the number of rows?
 ```{r,  eval=FALSE, tidy=TRUE}
 ## 1. Using RData files is the fastest -
 ## although you have to read the data in first.
@@ -82,67 +81,70 @@ l
 ## Practical 2
 
 
-1. In this question, we'll compare matrices and data frames. Suppose we have a matrix, `d\_m`
-```{r, echo = TRUE}
-##For fast computers
-#d_m = matrix(1:1000000, ncol=1000)
-##Slower computers
-d_m = matrix(1:10000, ncol=100)
-dim(d_m)
-```
-and a data frame `d\_df`:
-```{r, echo = TRUE}
-d_df = as.data.frame(d_m)
-colnames(d_df) = paste0("c", 1:ncol(d_df))
-```
-
-  + Using the following code, calculate the relative differences between selecting the first column/row of a data frame and matrix.
-    ```{r,results='hide', tidy=FALSE, echo = TRUE}
-    benchmark(replications=1000,
-              d_m[1,], d_df[1,], d_m[,1], d_df[,1],
-              columns=c("test", "elapsed", "relative"))
+1. In this question, we'll compare matrices and data frames. Suppose we have a matrix, `d_m`
+    ```{r, echo = TRUE}
+    ##For fast computers
+    #d_m = matrix(1:1000000, ncol=1000)
+    ##Slower computers
+    d_m = matrix(1:10000, ncol=100)
+    dim(d_m)
     ```
-  \noindent Can you explain the result? Try varying the number of replications.
-    ```{r,  tidy=TRUE}
-    ## Two things are going on here
-    ## 1. The very large difference when selecting columns and rows (in data frames)
-    ## is because the data is stored in column major-order. Although the matrix is also stored in column major-order, because everything is the same type, we can efficiently select values.
-    
-    ##2. Matrices are also more memory efficient:
-    m = matrix(runif(1e4), ncol=1e4)
-    d = data.frame(m)
-    object.size(m)
-    object.size(d)
+and a data frame `d_df`:
+    ```{r, echo = TRUE}
+    d_df = as.data.frame(d_m)
+    colnames(d_df) = paste0("c", 1:ncol(d_df))
     ```
-  + When selecting columns in a data frame, there are a few different methods. For example,
-    ```{r,results='hide', echo = TRUE}
-    d_df$c10
-    d_df[,10]
-    d_df[,"c10"]
-    d_df[,colnames(d_df) == "c10"]
-    ```
-  Compare these four methods.
-    ```{r,echo=FALSE, eval=FALSE}
-    benchmark(replications=10000,
-              d_df$c10, d_df[,10], d_df[,"c10"],d_df[,colnames(d_df) == "c10"],
-              columns=c("test", "elapsed", "relative"))
-    
-    m = matrix(1:100000000, ncol=10000)
-    dim(m)
-    
-    benchmark(replications=10000,
-              m[,1], m[1,], columns=c("test", "elapsed", "relative"))
-    ```
-    ```{r,echo=FALSE}
-    n = 1
-    ```
+    + Using the following code, calculate the relative differences between selecting the first column/row of a data frame and matrix.
+        ```{r,results='hide', tidy=FALSE, echo = TRUE}
+        mark(d_m[1,], d_df[1,], d_m[,1], d_df[,1],
+             relative = TRUE, 
+             check = FALSE)
+        ```
+    Can you explain the result? Try varying the number of replications.
+        ```{r,  tidy=TRUE}
+        ## Two things are going on here
+        ## 1. The very large difference when selecting columns and rows (in data frames)
+        ## is because the data is stored in column major-order. Although the matrix is also stored in column major-order, because everything is the same type, we can efficiently select values.
+        
+        ##2. Matrices are also more memory efficient:
+        m = matrix(runif(1e4), ncol=1e4)
+        d = data.frame(m)
+        object.size(m)
+        object.size(d)
+        ```
+      + When selecting columns in a data frame, there are a few different methods. For example,
+        ```{r,results='hide', echo = TRUE}
+        d_df$c10
+        d_df[,10]
+        d_df[,"c10"]
+        d_df[,colnames(d_df) == "c10"]
+        ```
+      Compare these four methods.
+        ```{r, eval=FALSE}
+        mark(d_df$c10, 
+             d_df[,10], 
+             d_df[,"c10"],
+             d_df[,colnames(d_df) == "c10"],
+             iterations = 10000, 
+             relative = TRUE)
+        
+        m = matrix(1:100000000, ncol=10000)
+        dim(m)
+        
+        mark(m[,1], m[1,],
+             iterations = 10000, 
+             relative = TRUE)
+        ```
+        ```{r,echo=FALSE}
+        n = 1
+        ```
 2. Consider the following piece of code:
-```{r,tidy=FALSE, echo = TRUE}
-a = NULL
-for(i in 1:n)
-  a = c(a, 2 * pi * sin(i))
-```
-\noindent This code calculates the values:
+    ```{r,tidy=FALSE, echo = TRUE}
+    a = NULL
+    for(i in 1:n)
+      a = c(a, 2 * pi * sin(i))
+    ```
+This code calculates the values:
 \[
 2\pi \sin(1), 2 \pi \sin(2), 2 \pi sin(3), \ldots, 2 \pi sin(n)
 \]
@@ -151,33 +153,33 @@ and stores them in a vector. Two obvious ways of speeding up this code are:
     - Remove $2 \times \pi$ from the loop, i.e. at the end of the loop have the statement: `2*pi*a`.
 Try the above techniques for speeding up the loop. Vary $n$ and plot your results.
 3. R is an interpreted language; this means that the interpreter executes the program source code directly, statement by statement. Therefore, every function call takes time.^[This example is for illustrative proposes. Please don't start worrying about comments and brackets.] Consider these three examples:
-```{r,cache=TRUE, tidy=FALSE, echo = TRUE}
-n = 1e6
-## Example 1
-I = 0
-for(i in 1:n) {
-  10
-  I = I + 1
-}
-## Example 2
-I = 0
-for(i in 1:n){
-  ((((((((((10))))))))))
-  I = I + 1
-}
-## Example 3
-I = 0
-for(i in 1:n){
-  ##This is a comment
-  ##But it is still parsed
-  ##So takes time
-  ##But not a lot
-  ##So don't worry!
-  10
-  I = I + 1
-}
-```
-\noindent Using the `benchmark` function, time these three examples.
+    ```{r,cache=TRUE, tidy=FALSE, echo = TRUE}
+    n = 1e6
+    ## Example 1
+    I = 0
+    for(i in 1:n) {
+      10
+      I = I + 1
+    }
+    ## Example 2
+    I = 0
+    for(i in 1:n){
+      ((((((((((10))))))))))
+      I = I + 1
+    }
+    ## Example 3
+    I = 0
+    for(i in 1:n){
+      ##This is a comment
+      ##But it is still parsed
+      ##So takes time
+      ##But not a lot
+      ##So don't worry!
+      10
+      I = I + 1
+    }
+    ```
+Using the `mark()` function, time these three examples.
 
 
 
@@ -186,10 +188,10 @@ for(i in 1:n){
 
 
 1.  To begin, load the `parallel` package and determine how many cores you have
-```{r,results='hide', echo = TRUE}
-library("parallel")
-detectCores()
-```
+    ```{r,results='hide', echo = TRUE}
+    library("parallel")
+    detectCores()
+    ```
 2. Run the parallel `apply` example in the notes.
   - On your machine, what value of `N` do you need to use to make the parallel code run quicker than the standard serial version?
   - When I ran the benchmarks, I didn't include the `makeCluster` and `stopCluster` functions calls. Include these calls in your timings. How does this affect your benchmarks?
