@@ -1,7 +1,7 @@
 Package: jrEfficient
 Type: Package
 Title: Efficient R Programming
-Version: 0.1.3
+Version: 0.1.4
 Authors@R: person("Colin", "Gillespie", 
      email="colin@jumpingrivers.com", 
      role = c("aut", "cre"))
@@ -28,7 +28,8 @@ Suggests:
     testthat,
     lintr,
     fortunes,
-    benchmarkme
+    benchmarkme,
+    ggbeeswarm
 Encoding: UTF-8
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
