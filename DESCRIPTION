@@ -28,10 +28,12 @@ Suggests:
     formatR,
     fortunes,
     ggbeeswarm,
+    ggplot2,
     knitr,
     lintr,
     readr,
     testthat,
+    tidyr,
     tufte
 VignetteBuilder: 
     knitr
