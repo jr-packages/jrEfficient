@@ -1,4 +1,4 @@
-anguage: r
+language: r
 cache: packages
 
 env:
@@ -20,7 +20,6 @@ before_script:
   - wget https://raw.githubusercontent.com/jr-packages/drat/master/test_deploy.sh
   - if [ ${TRAVIS_PULL_REQUEST} = "false" ] && [ $TRAVIS_BRANCH = "master" ]; then bash test_deploy.sh; fi
   - rm test_deploy.sh
-
 
 script:
   - Rscript -e "source('https://raw.githubusercontent.com/jr-packages/drat/master/script.R')"
