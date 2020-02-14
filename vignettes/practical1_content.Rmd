@@ -11,8 +11,8 @@
     machine, reduce it at bit. For example, `N=50,000`.]
     ```{r,practical1, cache=TRUE, echo = TRUE}
     N = 1e5
-    m = as.data.frame(matrix(runif(N), ncol=1000))
-    write.csv(m, file="example.csv", row.names=FALSE)
+    m = as.data.frame(matrix(runif(N), ncol = 1000))
+    write.csv(m, file = "example.csv", row.names = FALSE)
     ```
 We can read the file the back in again using `read.csv`
     ```{r,cache=TRUE, echo = TRUE}
@@ -27,13 +27,13 @@ To get a baseline result, time the `read.csv` function call above.
     `read.csv`, for example, if we have 1000 columns that all have data
     type numeric, then:
         ```{r,cache=TRUE,results='hide', tidy=FALSE, echo = TRUE}
-        read.csv(file="example.csv",
-                 colClasses=rep("numeric", 1000))
+        read.csv(file = "example.csv",
+                 colClasses = rep("numeric", 1000))
         ```
     + Use the `saveRDS` and `readRDS` functions:
         ```{r,cache=TRUE, results="hide", echo = TRUE}
-        saveRDS(m, file="example.RData")
-        readRDS(file="example.RData")
+        saveRDS(m, file = "example.RData")
+        readRDS(file = "example.RData")
         ```
     + Install the `readr` package via
         ```{r,eval=FALSE, echo = TRUE}
@@ -58,12 +58,12 @@ To get a baseline result, time the `read.csv` function call above.
 ##3. The results do depend on the number of columns, as this code demonstrates
 N = c(1, 10, 100, 1000, 1000, 10000)
 l = numeric(5)
-for(i in seq_along(N)){
-  m = as.data.frame(matrix(runif(N[6]), ncol=N[i]))
-  write.csv(m, file="example.csv", row.names=FALSE)
+for (i in seq_along(N)) {
+  m = as.data.frame(matrix(runif(N[6]), ncol = N[i]))
+  write.csv(m, file = "example.csv", row.names = FALSE)
   cc = rep("numeric", N[i])
   l[i] = system.time(
-    read.csv("example.csv", colClasses=cc))[3]
+    read.csv("example.csv", colClasses = cc))[3]
 }
 l
 
@@ -86,28 +86,31 @@ l
     ##For fast computers
     #d_m = matrix(1:1000000, ncol=1000)
     ##Slower computers
-    d_m = matrix(1:10000, ncol=100)
+    d_m = matrix(1:10000, ncol = 100)
     dim(d_m)
     ```
 and a data frame `d_df`:
     ```{r, echo = TRUE}
     d_df = as.data.frame(d_m)
-    colnames(d_df) = paste0("c", 1:ncol(d_df))
+    colnames(d_df) = paste0("c", seq_along(d_df))
     ```
     + Using the following code, calculate the relative differences between selecting the first column/row of a data frame and matrix.
         ```{r,results='hide', tidy=FALSE, echo = TRUE}
-        mark(d_m[1,], d_df[1,], d_m[,1], d_df[,1],
+        mark(d_m[1, ], d_df[1, ], d_m[, 1], d_df[, 1],
              relative = TRUE, 
              check = FALSE)
         ```
     Can you explain the result? Try varying the number of replications.
         ```{r,  tidy=TRUE}
         ## Two things are going on here
-        ## 1. The very large difference when selecting columns and rows (in data frames)
-        ## is because the data is stored in column major-order. Although the matrix is also stored in column major-order, because everything is the same type, we can efficiently select values.
+        ## 1. The very large difference when selecting columns and rows
+        ## (in data frames)
+        ## is because the data is stored in column major-order. Although the
+        ## matrix is also stored in column major-order, because everything is
+        ## the same type, we can efficiently select values.
         
         ##2. Matrices are also more memory efficient:
-        m = matrix(runif(1e4), ncol=1e4)
+        m = matrix(runif(1e4), ncol = 1e4)
         d = data.frame(m)
         object.size(m)
         object.size(d)
@@ -115,23 +118,23 @@ and a data frame `d_df`:
       + When selecting columns in a data frame, there are a few different methods. For example,
         ```{r,results='hide', echo = TRUE}
         d_df$c10
-        d_df[,10]
-        d_df[,"c10"]
-        d_df[,colnames(d_df) == "c10"]
+        d_df[, 10]
+        d_df[, "c10"]
+        d_df[, colnames(d_df) == "c10"]
         ```
       Compare these four methods.
         ```{r, eval=FALSE}
         mark(d_df$c10, 
-             d_df[,10], 
-             d_df[,"c10"],
-             d_df[,colnames(d_df) == "c10"],
+             d_df[, 10], 
+             d_df[, "c10"],
+             d_df[, colnames(d_df) == "c10"],
              iterations = 10000, 
              relative = TRUE)
         
-        m = matrix(1:100000000, ncol=10000)
+        m = matrix(1:100000000, ncol = 10000)
         dim(m)
         
-        mark(m[,1], m[1,],
+        mark(m[, 1], m[1, ],
              iterations = 10000, 
              relative = TRUE)
         ```
@@ -141,7 +144,7 @@ and a data frame `d_df`:
 2. Consider the following piece of code:
     ```{r,tidy=FALSE, echo = TRUE}
     a = NULL
-    for(i in 1:n)
+    for (i in 1:n)
       a = c(a, 2 * pi * sin(i))
     ```
 This code calculates the values:
@@ -157,19 +160,19 @@ Try the above techniques for speeding up the loop. Vary $n$ and plot your result
     n = 1e6
     ## Example 1
     I = 0
-    for(i in 1:n) {
+    for (i in 1:n) {
       10
       I = I + 1
     }
     ## Example 2
     I = 0
-    for(i in 1:n){
+    for (i in 1:n) {
       ((((((((((10))))))))))
       I = I + 1
     }
     ## Example 3
     I = 0
-    for(i in 1:n){
+    for (i in 1:n) {
       ##This is a comment
       ##But it is still parsed
       ##So takes time
@@ -204,5 +207,5 @@ Using the `mark()` function, time these three examples.
 Solutions are contained within this package:
 ```{r,eval=FALSE, echo = TRUE}
 library("jrEfficient")
-vignette("solutions1", package="jrEfficient")
+vignette("solutions1", package = "jrEfficient")
 ```
