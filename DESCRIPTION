@@ -1,7 +1,7 @@
 Type: Package
 Package: jrEfficient
 Title: Efficient R Programming
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: 
     person(given = "Colin",
            family = "Gillespie",
@@ -38,4 +38,4 @@ Suggests:
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
