@@ -1,7 +1,7 @@
 Type: Package
 Package: jrEfficient
 Title: Jumping Rivers: Efficient R Programming
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: 
     person(given = "Colin",
            family = "Gillespie",
@@ -22,8 +22,9 @@ Depends:
 Imports:
     bench,
     benchmarkme,
-    pryr,
-    rbenchmark
+    dplyr,
+    lobstr,
+    readr
 Suggests:
     formatR,
     fortunes,
@@ -31,7 +32,6 @@ Suggests:
     ggplot2,
     knitr,
     lintr,
-    readr,
     testthat,
     tidyr,
     tufte
