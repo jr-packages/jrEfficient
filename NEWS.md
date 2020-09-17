@@ -1,6 +1,6 @@
 # jrEfficient 0.1.8 _2020-09-17_
 
-  * Bump ggbeeswarm, ggplot2, tidyr from Suggests to Depends
+  * Bump ggbeeswarm, ggplot2, tidyr from Suggests to Imports
 
 # jrEfficient 0.1.7 _2020-09-11_
 
